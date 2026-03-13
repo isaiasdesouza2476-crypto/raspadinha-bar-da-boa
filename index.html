@@ -1,52 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>Raspadinha do Bar da Boa</title>
 
 <style>
 
 body{
-margin:0;
 font-family:Arial;
 text-align:center;
-background:url("fundo.jpg") center/cover no-repeat fixed;
+margin:0;
+background:url("fundo.jpeg") center/cover no-repeat fixed;
 color:white;
 }
 
 .overlay{
-background:rgba(0,0,0,0.65);
+background:rgba(0,0,0,0.7);
 min-height:100vh;
 padding:20px;
 }
 
 .logo{
-width:220px;
-margin-top:10px;
-}
-
-h1{
-margin-top:10px;
-}
-
-p{
-font-size:18px;
+width:200px;
 }
 
 select,input,button{
-padding:12px;
+padding:10px;
 font-size:18px;
+margin:10px;
 border-radius:8px;
 border:none;
-margin:8px;
-}
-
-button{
-background:#f1c40f;
-cursor:pointer;
 }
 
 .grid{
@@ -60,18 +43,13 @@ margin-top:30px;
 .card{
 width:120px;
 height:120px;
-background:linear-gradient(45deg,#9e9e9e,#d0d0d0);
-border-radius:10px;
+background:silver;
 display:flex;
 align-items:center;
 justify-content:center;
-font-weight:bold;
 cursor:pointer;
-font-size:18px;
-}
-
-.card:hover{
-transform:scale(1.05);
+border-radius:10px;
+font-weight:bold;
 }
 
 .raspada{
@@ -79,18 +57,7 @@ background:white;
 color:black;
 }
 
-#mensagem{
-font-size:30px;
-margin-top:25px;
-font-weight:bold;
-}
-
-.hidden{
-display:none;
-}
-
 </style>
-
 </head>
 
 <body>
@@ -101,34 +68,43 @@ display:none;
 
 <h1>Raspadinha do Bar da Boa</h1>
 
-<p>A cada R$25 em consumo você ganha uma raspadinha!</p>
+<p>A cada R$25 em consumo você ganha uma raspadinha</p>
 
 <select id="valor">
-
 <option value="1">25,00 - 1 raspadinha</option>
 <option value="2">50,00 - 2 raspadinhas</option>
 <option value="3">75,00 - 3 raspadinhas</option>
 <option value="4">100,00 - 4 raspadinhas</option>
-<option value="5">125,00 - 5 raspadinhas</option>
-<option value="6">150,00 - 6 raspadinhas</option>
-
 </select>
 
 <br>
 
-<input type="password" id="senha" placeholder="Senha do atendente">
+<input id="senha" type="password" placeholder="Senha">
 
 <button onclick="liberar()">Liberar raspadinhas</button>
 
-<div id="mensagem"></div>
-
-<div id="jogo" class="grid hidden"></div>
+<div id="jogo" class="grid"></div>
 
 </div>
 
 <script>
 
-let premiosBase=[
+function liberar(){
+
+var senha=document.getElementById("senha").value
+
+if(senha!="221430"){
+
+alert("Senha incorreta")
+
+return
+
+}
+
+var qtd=parseInt(document.getElementById("valor").value)
+
+var premios=[
+
 "Vale 1 cerveja",
 "Vale 1 energético",
 "Vale 1 dose",
@@ -141,47 +117,18 @@ let premiosBase=[
 "Não ganhou",
 "Não ganhou",
 "Não ganhou"
+
 ]
 
-function embaralhar(array){
+premios.sort(()=>Math.random()-0.5)
 
-for(let i=array.length-1;i>0;i--){
-
-let j=Math.floor(Math.random()*(i+1))
-
-[array[i],array[j]]=[array[j],array[i]]
-
-}
-
-}
-
-function liberar(){
-
-let senha=document.getElementById("senha").value
-
-if(senha!="221430"){
-
-alert("Senha incorreta")
-
-return
-
-}
-
-let premios=[...premiosBase]
-
-embaralhar(premios)
-
-let qtd=document.getElementById("valor").value
-
-let jogo=document.getElementById("jogo")
+var jogo=document.getElementById("jogo")
 
 jogo.innerHTML=""
 
-document.getElementById("mensagem").innerHTML=""
+for(var i=0;i<qtd;i++){
 
-for(let i=0;i<qtd;i++){
-
-let carta=document.createElement("div")
+var carta=document.createElement("div")
 
 carta.className="card"
 
@@ -195,21 +142,13 @@ if(this.classList.contains("raspada")) return
 
 this.classList.add("raspada")
 
-let r=this.dataset.resultado
+if(this.dataset.resultado=="Não ganhou"){
 
-if(r=="Não ganhou"){
+this.innerHTML="❌ Não foi dessa vez"
 
-document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
+}else{
 
-this.innerHTML="❌"
-
-}
-
-else{
-
-document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+r
-
-this.innerHTML="🎉"
+this.innerHTML="🎉 "+this.dataset.resultado
 
 }
 
@@ -219,12 +158,9 @@ jogo.appendChild(carta)
 
 }
 
-jogo.classList.remove("hidden")
-
 }
 
 </script>
 
 </body>
-
 </html>
