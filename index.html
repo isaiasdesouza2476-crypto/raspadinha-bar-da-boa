@@ -169,14 +169,13 @@ function liberar(){
   let senha=document.getElementById("senha").value;
   if(senha!="221430"){ alert("Senha incorreta"); return }
 
-  // trava o scroll
-  if(!scrollTravado){
-    document.body.style.overflow="hidden";
-    scrollTravado=true;
-  }
-
   raspadas=0;
   limite=parseInt(document.getElementById("valor").value);
+
+  // trava o scroll só **após um pequeno delay**, dando tempo do teclado fechar no celular
+  if(!scrollTravado){
+    setTimeout(()=>{ document.body.style.overflow="hidden"; scrollTravado=true; }, 300);
+  }
 
   let premios=[
     "Vale 1 cerveja",
@@ -192,7 +191,6 @@ function liberar(){
     "Não ganhou",
     "Não ganhou"
   ];
-
   premios.sort(()=>Math.random()-0.5);
 
   let jogo=document.getElementById("jogo");
@@ -214,7 +212,7 @@ function liberar(){
     jogo.appendChild(card);
 
     let ctx=canvas.getContext("2d");
-    ctx.fillStyle="#FFD700"; // camada amarela
+    ctx.fillStyle="#FFD700";
     ctx.fillRect(0,0,120,120);
     ctx.globalCompositeOperation="destination-out";
 
