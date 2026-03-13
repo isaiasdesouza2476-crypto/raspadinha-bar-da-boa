@@ -188,18 +188,15 @@ function liberar(){
   raspadas=0;
   limite=parseInt(document.getElementById("valor").value);
 
-  // trava scroll somente depois de liberar a raspadinha
-  if(!scrollTravado){
-    setTimeout(()=>{
-      document.body.style.overflow="hidden";
-      scrollTravado=true;
-    },300);
-  }
-
-  // previne scroll/arrastar em mobile
-  document.addEventListener('touchmove', function(e){
-    if(scrollTravado) e.preventDefault();
-  }, { passive:false });
+  // delay curto para teclado fechar antes de travar scroll
+  setTimeout(()=>{
+    document.body.style.overflow="hidden";
+    scrollTravado=true;
+    // previne touch move no mobile durante raspadinha
+    document.addEventListener('touchmove', function(e){
+      if(scrollTravado) e.preventDefault();
+    }, { passive:false });
+  },200); // 200ms é suficiente para teclado fechar
 
   let premios=[
     "Vale 1 cerveja",
@@ -281,6 +278,9 @@ function liberar(){
       ctx.fill();
     });
   }
+
+  // força recalcular grid para garantir que todas 12 raspadinhas apareçam no mobile
+  setTimeout(()=>{ window.scrollTo(0,0); },300);
 }
 </script>
 
