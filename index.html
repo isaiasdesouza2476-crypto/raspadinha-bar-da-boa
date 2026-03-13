@@ -11,7 +11,7 @@ body{
   text-align:center;
   background:url("fundo.jpeg") center/cover no-repeat fixed;
   color:white;
-  overflow:auto; /* scroll liberado inicialmente */
+  overflow:auto;
   touch-action:none;
 }
 
@@ -94,8 +94,8 @@ canvas{
 .ganhou{ color:#2ecc71; }
 .perdeu{ color:#e74c3c; }
 
-#contador{ margin-top:10px; font-size:18px; }
-
+#contador{ margin-top:10px; font-size:18px; text-align:left; }
+#listaPremios{ margin-top:8px; font-size:16px; text-align:left; }
 </style>
 </head>
 
@@ -124,6 +124,7 @@ canvas{
 
 <div id="contador">
 Prêmios entregues hoje: <span id="premiosHoje">0</span>
+<div id="listaPremios"></div>
 </div>
 
 <div id="jogo" class="grid"></div>
@@ -138,13 +139,27 @@ Prêmios entregues hoje: <span id="premiosHoje">0</span>
 let raspadas=0;
 let limite=0;
 let premiosHoje=0;
+let listaPremios=[];
 let scrollTravado=false;
+
+// Carregar contador e lista do localStorage
+if(localStorage.getItem('premiosHoje')){
+  premiosHoje=parseInt(localStorage.getItem('premiosHoje'));
+}
+if(localStorage.getItem('listaPremios')){
+  listaPremios=JSON.parse(localStorage.getItem('listaPremios'));
+}
+document.getElementById("premiosHoje").innerText=premiosHoje;
+document.getElementById("listaPremios").innerText=listaPremios.join(', ');
 
 let somRaspar=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-scratching-sound-2693.mp3");
 let somVitoria=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3");
 
 function atualizarContador(){
   document.getElementById("premiosHoje").innerText=premiosHoje;
+  document.getElementById("listaPremios").innerText=listaPremios.join(', ');
+  localStorage.setItem('premiosHoje',premiosHoje);
+  localStorage.setItem('listaPremios',JSON.stringify(listaPremios));
 }
 
 function mostrarMensagem(texto,classe){
@@ -160,6 +175,7 @@ function resetar(){
   let senha=prompt("Senha para resetar");
   if(senha==="221430"){
     premiosHoje=0;
+    listaPremios=[];
     atualizarContador();
     alert("Contador resetado");
   }
@@ -172,10 +188,18 @@ function liberar(){
   raspadas=0;
   limite=parseInt(document.getElementById("valor").value);
 
-  // trava o scroll só **após um pequeno delay**, dando tempo do teclado fechar no celular
+  // trava scroll somente depois de liberar a raspadinha
   if(!scrollTravado){
-    setTimeout(()=>{ document.body.style.overflow="hidden"; scrollTravado=true; }, 300);
+    setTimeout(()=>{
+      document.body.style.overflow="hidden";
+      scrollTravado=true;
+    },300);
   }
+
+  // previne scroll/arrastar em mobile
+  document.addEventListener('touchmove', function(e){
+    if(scrollTravado) e.preventDefault();
+  }, { passive:false });
 
   let premios=[
     "Vale 1 cerveja",
@@ -241,6 +265,7 @@ function liberar(){
         somVitoria.play();
         confetti({particleCount:150,spread:70,origin:{y:0.6}});
         premiosHoje++;
+        listaPremios.push(premio);
         atualizarContador();
       }
     });
