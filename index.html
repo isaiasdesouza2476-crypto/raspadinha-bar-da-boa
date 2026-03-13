@@ -5,106 +5,96 @@
 <title>Raspadinha do Bar da Boa</title>
 
 <style>
-
 body{
-margin:0;
-font-family:Arial;
-text-align:center;
-background:url("fundo.jpeg") center/cover no-repeat fixed;
-color:white;
-overflow:hidden;
-touch-action:none;
+  margin:0;
+  font-family:Arial;
+  text-align:center;
+  background:url("fundo.jpeg") center/cover no-repeat fixed;
+  color:white;
+  overflow:auto; /* scroll liberado inicialmente */
+  touch-action:none;
 }
 
 .overlay{
-background:rgba(0,0,0,0.65);
-min-height:100vh;
-padding:20px;
+  background:rgba(0,0,0,0.65);
+  min-height:100vh;
+  padding:20px;
 }
+
+h1{ margin-top:0; }
 
 select,input,button{
-padding:12px;
-font-size:18px;
-border-radius:8px;
-border:none;
-margin:8px;
+  padding:12px;
+  font-size:18px;
+  border-radius:8px;
+  border:none;
+  margin:6px;
 }
 
-button{
-background:#f1c40f;
-cursor:pointer;
-}
+button{ background:#f1c40f; cursor:pointer; }
 
 .grid{
-display:grid;
-grid-template-columns:repeat(4,120px);
-gap:15px;
-justify-content:center;
-margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(4,120px);
+  gap:15px;
+  justify-content:center;
+  margin-top:25px;
 }
 
 .card{
-width:120px;
-height:120px;
-border-radius:10px;
-background:white;
-color:black;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
-position:relative;
-overflow:hidden;
+  width:120px;
+  height:120px;
+  border-radius:10px;
+  background:white;
+  color:black;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  position:relative;
+  overflow:hidden;
 }
 
 .premio{
-position:absolute;
-z-index:1;
-text-align:center;
-padding:6px;
-font-size:14px;
+  position:absolute;
+  z-index:1;
+  font-size:14px;
+  padding:5px;
+  text-align:center;
 }
 
 canvas{
-position:absolute;
-top:0;
-left:0;
-z-index:2;
-touch-action:none;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:2;
 }
 
-/* POPUP CENTRAL */
-
 #popup{
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%) scale(0.7);
-background:rgba(0,0,0,0.95);
-padding:40px 60px;
-border-radius:20px;
-font-size:42px;
-font-weight:bold;
-z-index:9999;
-opacity:0;
-pointer-events:none;
-transition:0.25s;
-max-width:80%;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) scale(0.7);
+  background:rgba(0,0,0,0.95);
+  padding:40px 60px;
+  border-radius:20px;
+  font-size:42px;
+  font-weight:bold;
+  z-index:9999;
+  opacity:0;
+  pointer-events:none;
+  transition:0.25s;
 }
 
 #popup.show{
-transform:translate(-50%,-50%) scale(1);
-opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
 }
 
-.ganhou{
-color:#2ecc71;
-}
+.ganhou{ color:#2ecc71; }
+.perdeu{ color:#e74c3c; }
 
-.perdeu{
-color:#e74c3c;
-}
-
+#contador{ margin-top:10px; font-size:18px; }
 </style>
 </head>
 
@@ -128,8 +118,12 @@ color:#e74c3c;
 <br>
 
 <input id="senha" type="password" placeholder="Senha do atendente">
-
 <button onclick="liberar()">Liberar raspadinhas</button>
+<button onclick="resetar()">Reset noite</button>
+
+<div id="contador">
+Prêmios entregues hoje: <span id="premiosHoje">0</span>
+</div>
 
 <div id="jogo" class="grid"></div>
 
@@ -137,131 +131,133 @@ color:#e74c3c;
 
 <div id="popup"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
 
 let raspadas=0
 let limite=0
+let premiosHoje=0
+let scrollTravado=false
+
+let somRaspar=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-scratching-sound-2693.mp3")
+let somVitoria=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3")
+
+function atualizarContador(){
+  document.getElementById("premiosHoje").innerText=premiosHoje
+}
 
 function mostrarMensagem(texto,classe){
+  let popup=document.getElementById("popup")
+  popup.className=""
+  popup.classList.add(classe)
+  popup.innerHTML=texto
+  popup.classList.add("show")
+  setTimeout(()=>{ popup.classList.remove("show") },1500)
+}
 
-let popup=document.getElementById("popup")
-
-popup.className=""
-popup.classList.add(classe)
-
-popup.innerHTML=texto
-
-popup.classList.add("show")
-
-setTimeout(()=>{
-popup.classList.remove("show")
-},1500)
-
+function resetar(){
+  let senha=prompt("Senha para resetar")
+  if(senha==="221430"){
+    premiosHoje=0
+    atualizarContador()
+    alert("Contador resetado")
+  }
 }
 
 function liberar(){
+  let senha=document.getElementById("senha").value
+  if(senha!="221430"){ alert("Senha incorreta"); return }
 
-let senha=document.getElementById("senha").value
+  // travar scroll do body
+  if(!scrollTravado){
+    document.body.style.overflow="hidden"
+    scrollTravado=true
+  }
 
-if(senha!="221430"){
-alert("Senha incorreta")
-return
-}
+  raspadas=0
+  limite=parseInt(document.getElementById("valor").value)
 
-raspadas=0
-limite=parseInt(document.getElementById("valor").value)
+  let premios=[
+    "Vale 1 cerveja",
+    "Vale 1 energético",
+    "Vale 1 dose",
+    "Vale 1 copão",
+    "Vale 1 cerveja",
+    "Vale 1 energético",
+    "Não ganhou",
+    "Não ganhou",
+    "Não ganhou",
+    "Não ganhou",
+    "Não ganhou",
+    "Não ganhou"
+  ]
+  premios.sort(()=>Math.random()-0.5)
 
-let premios=[
-"Vale 1 cerveja",
-"Vale 1 energético",
-"Vale 1 dose",
-"Vale 1 copão",
-"Vale 1 cerveja",
-"Vale 1 energético",
-"Não ganhou",
-"Não ganhou",
-"Não ganhou",
-"Não ganhou",
-"Não ganhou",
-"Não ganhou"
-]
+  let jogo=document.getElementById("jogo")
+  jogo.innerHTML=""
 
-premios.sort(()=>Math.random()-0.5)
+  for(let i=0;i<12;i++){
+    let card=document.createElement("div")
+    card.className="card"
 
-let jogo=document.getElementById("jogo")
-jogo.innerHTML=""
+    let texto=document.createElement("div")
+    texto.className="premio"
+    texto.innerHTML=premios[i]
 
-for(let i=0;i<12;i++){
+    card.appendChild(texto)
 
-let card=document.createElement("div")
-card.className="card"
+    let canvas=document.createElement("canvas")
+    canvas.width=120
+    canvas.height=120
+    card.appendChild(canvas)
+    jogo.appendChild(card)
 
-let texto=document.createElement("div")
-texto.className="premio"
-texto.innerHTML=premios[i]
+    let ctx=canvas.getContext("2d")
+    ctx.fillStyle="#FFD700"
+    ctx.fillRect(0,0,120,120)
+    ctx.globalCompositeOperation="destination-out"
 
-card.appendChild(texto)
+    let raspando=false
 
-let canvas=document.createElement("canvas")
-canvas.width=120
-canvas.height=120
+    canvas.addEventListener("pointerdown",()=>{
+      if(raspadas>=limite) return
+      raspando=true
+      somRaspar.currentTime=0
+      somRaspar.play()
+    })
 
-card.appendChild(canvas)
+    canvas.addEventListener("pointerup",()=>{
+      raspando=false
+      if(canvas.revelado) return
+      if(raspadas>=limite) return
 
-jogo.appendChild(card)
+      canvas.revelado=true
+      raspadas++
 
-let ctx=canvas.getContext("2d")
+      let premio=texto.innerHTML
+      if(premio==="Não ganhou"){
+        mostrarMensagem("❌ Não foi dessa vez!","perdeu")
+      }else{
+        mostrarMensagem("🎉 Parabéns! Você ganhou: "+premio,"ganhou")
+        somVitoria.play()
+        confetti({particleCount:150,spread:70,origin:{y:0.6}})
+        premiosHoje++
+        atualizarContador()
+      }
+    })
 
-ctx.fillStyle="#FFD700"
-ctx.fillRect(0,0,120,120)
-
-ctx.globalCompositeOperation="destination-out"
-
-let raspando=false
-
-canvas.addEventListener("pointerdown",()=>{
-if(raspadas>=limite) return
-raspando=true
-})
-
-canvas.addEventListener("pointerup",()=>{
-
-raspando=false
-
-if(canvas.revelado) return
-if(raspadas>=limite) return
-
-canvas.revelado=true
-raspadas++
-
-let premio=texto.innerHTML
-
-if(premio==="Não ganhou"){
-mostrarMensagem("❌ Não foi dessa vez!","perdeu")
-}else{
-mostrarMensagem("🎉 Parabéns! Você ganhou: "+premio,"ganhou")
-}
-
-})
-
-canvas.addEventListener("pointermove",(e)=>{
-
-if(!raspando) return
-if(raspadas>=limite) return
-
-let rect=canvas.getBoundingClientRect()
-
-let x=e.clientX-rect.left
-let y=e.clientY-rect.top
-
-ctx.beginPath()
-ctx.arc(x,y,25,0,Math.PI*2)
-ctx.fill()
-
-})
-
-}
-
+    canvas.addEventListener("pointermove",(e)=>{
+      if(!raspando) return
+      if(raspadas>=limite) return
+      let rect=canvas.getBoundingClientRect()
+      let x=e.clientX-rect.left
+      let y=e.clientY-rect.top
+      ctx.beginPath()
+      ctx.arc(x,y,25,0,Math.PI*2)
+      ctx.fill()
+    })
+  }
 }
 
 </script>
