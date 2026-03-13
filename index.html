@@ -95,6 +95,7 @@ canvas{
 .perdeu{ color:#e74c3c; }
 
 #contador{ margin-top:10px; font-size:18px; }
+
 </style>
 </head>
 
@@ -134,49 +135,48 @@ Prêmios entregues hoje: <span id="premiosHoje">0</span>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
+let raspadas=0;
+let limite=0;
+let premiosHoje=0;
+let scrollTravado=false;
 
-let raspadas=0
-let limite=0
-let premiosHoje=0
-let scrollTravado=false
-
-let somRaspar=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-scratching-sound-2693.mp3")
-let somVitoria=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3")
+let somRaspar=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-scratching-sound-2693.mp3");
+let somVitoria=new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3");
 
 function atualizarContador(){
-  document.getElementById("premiosHoje").innerText=premiosHoje
+  document.getElementById("premiosHoje").innerText=premiosHoje;
 }
 
 function mostrarMensagem(texto,classe){
-  let popup=document.getElementById("popup")
-  popup.className=""
-  popup.classList.add(classe)
-  popup.innerHTML=texto
-  popup.classList.add("show")
-  setTimeout(()=>{ popup.classList.remove("show") },1500)
+  let popup=document.getElementById("popup");
+  popup.className="";
+  popup.classList.add(classe);
+  popup.innerHTML=texto;
+  popup.classList.add("show");
+  setTimeout(()=>{ popup.classList.remove("show") },1500);
 }
 
 function resetar(){
-  let senha=prompt("Senha para resetar")
+  let senha=prompt("Senha para resetar");
   if(senha==="221430"){
-    premiosHoje=0
-    atualizarContador()
-    alert("Contador resetado")
+    premiosHoje=0;
+    atualizarContador();
+    alert("Contador resetado");
   }
 }
 
 function liberar(){
-  let senha=document.getElementById("senha").value
+  let senha=document.getElementById("senha").value;
   if(senha!="221430"){ alert("Senha incorreta"); return }
 
-  // travar scroll do body
+  // trava o scroll
   if(!scrollTravado){
-    document.body.style.overflow="hidden"
-    scrollTravado=true
+    document.body.style.overflow="hidden";
+    scrollTravado=true;
   }
 
-  raspadas=0
-  limite=parseInt(document.getElementById("valor").value)
+  raspadas=0;
+  limite=parseInt(document.getElementById("valor").value);
 
   let premios=[
     "Vale 1 cerveja",
@@ -191,75 +191,74 @@ function liberar(){
     "Não ganhou",
     "Não ganhou",
     "Não ganhou"
-  ]
-  premios.sort(()=>Math.random()-0.5)
+  ];
 
-  let jogo=document.getElementById("jogo")
-  jogo.innerHTML=""
+  premios.sort(()=>Math.random()-0.5);
+
+  let jogo=document.getElementById("jogo");
+  jogo.innerHTML="";
 
   for(let i=0;i<12;i++){
-    let card=document.createElement("div")
-    card.className="card"
+    let card=document.createElement("div");
+    card.className="card";
 
-    let texto=document.createElement("div")
-    texto.className="premio"
-    texto.innerHTML=premios[i]
+    let texto=document.createElement("div");
+    texto.className="premio";
+    texto.innerHTML=premios[i];
+    card.appendChild(texto);
 
-    card.appendChild(texto)
+    let canvas=document.createElement("canvas");
+    canvas.width=120;
+    canvas.height=120;
+    card.appendChild(canvas);
+    jogo.appendChild(card);
 
-    let canvas=document.createElement("canvas")
-    canvas.width=120
-    canvas.height=120
-    card.appendChild(canvas)
-    jogo.appendChild(card)
+    let ctx=canvas.getContext("2d");
+    ctx.fillStyle="#FFD700"; // camada amarela
+    ctx.fillRect(0,0,120,120);
+    ctx.globalCompositeOperation="destination-out";
 
-    let ctx=canvas.getContext("2d")
-    ctx.fillStyle="#FFD700"
-    ctx.fillRect(0,0,120,120)
-    ctx.globalCompositeOperation="destination-out"
-
-    let raspando=false
+    let raspando=false;
 
     canvas.addEventListener("pointerdown",()=>{
-      if(raspadas>=limite) return
-      raspando=true
-      somRaspar.currentTime=0
-      somRaspar.play()
-    })
+      if(raspadas>=limite) return;
+      raspando=true;
+      somRaspar.currentTime=0;
+      somRaspar.play();
+    });
 
     canvas.addEventListener("pointerup",()=>{
-      raspando=false
-      if(canvas.revelado) return
-      if(raspadas>=limite) return
+      raspando=false;
+      if(canvas.revelado) return;
+      if(raspadas>=limite) return;
 
-      canvas.revelado=true
-      raspadas++
+      canvas.revelado=true;
+      raspadas++;
 
-      let premio=texto.innerHTML
+      let premio=texto.innerHTML;
       if(premio==="Não ganhou"){
-        mostrarMensagem("❌ Não foi dessa vez!","perdeu")
+        mostrarMensagem("❌ Não foi dessa vez!","perdeu");
       }else{
-        mostrarMensagem("🎉 Parabéns! Você ganhou: "+premio,"ganhou")
-        somVitoria.play()
-        confetti({particleCount:150,spread:70,origin:{y:0.6}})
-        premiosHoje++
-        atualizarContador()
+        mostrarMensagem("🎉 Parabéns! Você ganhou: "+premio,"ganhou");
+        somVitoria.play();
+        confetti({particleCount:150,spread:70,origin:{y:0.6}});
+        premiosHoje++;
+        atualizarContador();
       }
-    })
+    });
 
     canvas.addEventListener("pointermove",(e)=>{
-      if(!raspando) return
-      if(raspadas>=limite) return
-      let rect=canvas.getBoundingClientRect()
-      let x=e.clientX-rect.left
-      let y=e.clientY-rect.top
-      ctx.beginPath()
-      ctx.arc(x,y,25,0,Math.PI*2)
-      ctx.fill()
-    })
+      if(!raspando) return;
+      if(raspadas>=limite) return;
+      let rect=canvas.getBoundingClientRect();
+      let x=e.clientX-rect.left;
+      let y=e.clientY-rect.top;
+      ctx.beginPath();
+      ctx.arc(x,y,25,0,Math.PI*2);
+      ctx.fill();
+    });
   }
 }
-
 </script>
 
 </body>
