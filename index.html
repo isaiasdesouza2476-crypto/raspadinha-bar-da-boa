@@ -5,7 +5,6 @@
 <title>Raspadinha do Bar da Boa</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Arial;
@@ -42,17 +41,17 @@ margin-top:30px;
 }
 
 .card{
-position:relative;
 width:120px;
 height:120px;
-border-radius:10px;
-overflow:hidden;
 background:white;
 color:black;
+border-radius:10px;
 display:flex;
 align-items:center;
 justify-content:center;
 font-weight:bold;
+position:relative;
+overflow:hidden;
 }
 
 canvas{
@@ -60,13 +59,6 @@ position:absolute;
 top:0;
 left:0;
 }
-
-#mensagem{
-font-size:26px;
-margin-top:20px;
-font-weight:bold;
-}
-
 </style>
 </head>
 
@@ -75,7 +67,6 @@ font-weight:bold;
 <div class="overlay">
 
 <h1>Raspadinha do Bar da Boa</h1>
-
 <p>A cada R$25 em consumo você ganha uma raspadinha</p>
 
 <select id="valor">
@@ -101,10 +92,22 @@ font-weight:bold;
 
 <script>
 
-let raspadas = 0
-let limite = 0
+let limite=0
+let raspadas=0
 
-const premiosBase = [
+function liberar(){
+
+let senha=document.getElementById("senha").value
+
+if(senha!=="221430"){
+alert("Senha incorreta")
+return
+}
+
+limite=parseInt(document.getElementById("valor").value)
+raspadas=0
+
+let premios=[
 "Vale 1 cerveja",
 "Vale 1 energético",
 "Vale 1 dose",
@@ -119,31 +122,10 @@ const premiosBase = [
 "Não ganhou"
 ]
 
-function embaralhar(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1))
-[array[i],array[j]]=[array[j],array[i]]
-}
-}
-
-function liberar(){
-
-let senha=document.getElementById("senha").value
-
-if(senha!=="221430"){
-alert("Senha incorreta")
-return
-}
-
-raspadas=0
-limite=parseInt(document.getElementById("valor").value)
-
-let premios=[...premiosBase]
-embaralhar(premios)
+premios.sort(()=>Math.random()-0.5)
 
 let jogo=document.getElementById("jogo")
 jogo.innerHTML=""
-document.getElementById("mensagem").innerHTML=""
 
 for(let i=0;i<12;i++){
 
@@ -172,30 +154,26 @@ ctx.globalCompositeOperation="destination-out"
 
 let raspando=false
 
-function raspar(e){
+canvas.addEventListener("mousedown",()=>raspando=true)
+canvas.addEventListener("mouseup",()=>raspando=false)
 
+canvas.addEventListener("mousemove",function(e){
+
+if(!raspando) return
 if(raspadas>=limite) return
 
 let rect=canvas.getBoundingClientRect()
 
-let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left
-let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
 
 ctx.beginPath()
-ctx.arc(x,y,14,0,Math.PI*2)
+ctx.arc(x,y,15,0,Math.PI*2)
 ctx.fill()
 
-}
+})
 
-canvas.addEventListener("mousedown",()=>raspando=true)
-canvas.addEventListener("mouseup",()=>raspando=false)
-canvas.addEventListener("mousemove",e=>{if(raspando) raspar(e)})
-
-canvas.addEventListener("touchstart",()=>raspando=true)
-canvas.addEventListener("touchend",()=>raspando=false)
-canvas.addEventListener("touchmove",e=>{if(raspando) raspar(e)})
-
-canvas.addEventListener("mouseup",()=>{
+canvas.addEventListener("mouseup",function(){
 
 if(canvas.revelado) return
 
