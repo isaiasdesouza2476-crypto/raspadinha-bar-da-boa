@@ -95,6 +95,9 @@ left:0;
 
 <script>
 
+let raspadas=0
+let limite=0
+
 function liberar(){
 
 let senha=document.getElementById("senha").value
@@ -104,7 +107,8 @@ alert("Senha incorreta")
 return
 }
 
-let limite=parseInt(document.getElementById("valor").value)
+raspadas=0
+limite=parseInt(document.getElementById("valor").value)
 
 let premios=[
 "Vale 1 cerveja",
@@ -124,20 +128,84 @@ let premios=[
 premios.sort(()=>Math.random()-0.5)
 
 let jogo=document.getElementById("jogo")
-
 jogo.innerHTML=""
 
 for(let i=0;i<12;i++){
 
 let card=document.createElement("div")
 card.className="card"
-card.innerHTML=premios[i]
+
+let texto=document.createElement("div")
+texto.innerHTML=premios[i]
+
+card.appendChild(texto)
+
+let canvas=document.createElement("canvas")
+canvas.width=120
+canvas.height=120
+
+card.appendChild(canvas)
 
 jogo.appendChild(card)
 
+let ctx=canvas.getContext("2d")
+
+ctx.fillStyle="#C0C0C0"
+ctx.fillRect(0,0,120,120)
+
+ctx.globalCompositeOperation="destination-out"
+
+function raspar(x,y){
+
+if(raspadas>=limite) return
+
+ctx.beginPath()
+ctx.arc(x,y,18,0,Math.PI*2)
+ctx.fill()
+
 }
 
-document.getElementById("mensagem").innerHTML="Raspe até "+limite+" raspadinhas."
+canvas.addEventListener("pointermove",function(e){
+
+if(e.pressure>0){
+
+let rect=canvas.getBoundingClientRect()
+
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
+
+raspar(x,y)
+
+}
+
+})
+
+canvas.addEventListener("pointerup",function(){
+
+if(canvas.revelado) return
+
+canvas.revelado=true
+raspadas++
+
+let premio=texto.innerHTML
+
+if(premio==="Não ganhou"){
+document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
+}else{
+document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+premio
+}
+
+if(raspadas>=limite){
+
+document.querySelectorAll("canvas").forEach(c=>{
+c.style.pointerEvents="none"
+})
+
+}
+
+})
+
+}
 
 }
 
