@@ -13,6 +13,7 @@ text-align:center;
 background:url("fundo.jpeg") center/cover no-repeat fixed;
 color:white;
 overflow:hidden;
+touch-action:none;
 }
 
 .overlay{
@@ -161,7 +162,6 @@ jogo.appendChild(card)
 
 let ctx=canvas.getContext("2d")
 
-/* camada raspável amarela */
 ctx.fillStyle="#FFD700"
 ctx.fillRect(0,0,120,120)
 
@@ -170,6 +170,7 @@ ctx.globalCompositeOperation="destination-out"
 let raspando=false
 
 canvas.addEventListener("pointerdown",(e)=>{
+if(raspadas>=limite) return
 raspando=true
 })
 
@@ -191,14 +192,6 @@ document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
 document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+premio
 }
 
-if(raspadas>=limite){
-
-document.querySelectorAll("canvas").forEach(c=>{
-c.style.pointerEvents="none"
-})
-
-}
-
 })
 
 canvas.addEventListener("pointermove",(e)=>{
@@ -214,7 +207,7 @@ let x=e.clientX-rect.left
 let y=e.clientY-rect.top
 
 ctx.beginPath()
-ctx.arc(x,y,20,0,Math.PI*2)
+ctx.arc(x,y,25,0,Math.PI*2)
 ctx.fill()
 
 })
