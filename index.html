@@ -72,6 +72,36 @@ z-index:2;
 touch-action:none;
 }
 
+/* POPUP ANIMADO */
+
+#popup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%) scale(0.6);
+background:rgba(0,0,0,0.9);
+padding:25px 40px;
+border-radius:15px;
+font-size:30px;
+font-weight:bold;
+z-index:999;
+opacity:0;
+transition:0.25s;
+}
+
+#popup.show{
+transform:translate(-50%,-50%) scale(1);
+opacity:1;
+}
+
+.ganhou{
+color:#2ecc71;
+}
+
+.perdeu{
+color:#e74c3c;
+}
+
 </style>
 </head>
 
@@ -98,16 +128,31 @@ touch-action:none;
 
 <button onclick="liberar()">Liberar raspadinhas</button>
 
-<div id="mensagem"></div>
-
 <div id="jogo" class="grid"></div>
 
 </div>
+
+<div id="popup"></div>
 
 <script>
 
 let raspadas=0
 let limite=0
+
+function mostrarMensagem(texto,classe){
+
+let popup=document.getElementById("popup")
+
+popup.className=classe
+popup.innerHTML=texto
+
+popup.classList.add("show")
+
+setTimeout(()=>{
+popup.classList.remove("show")
+},1500)
+
+}
 
 function liberar(){
 
@@ -169,12 +214,12 @@ ctx.globalCompositeOperation="destination-out"
 
 let raspando=false
 
-canvas.addEventListener("pointerdown",(e)=>{
+canvas.addEventListener("pointerdown",()=>{
 if(raspadas>=limite) return
 raspando=true
 })
 
-canvas.addEventListener("pointerup",(e)=>{
+canvas.addEventListener("pointerup",()=>{
 
 raspando=false
 
@@ -187,9 +232,9 @@ raspadas++
 let premio=texto.innerHTML
 
 if(premio==="Não ganhou"){
-document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
+mostrarMensagem("❌ Não foi dessa vez!","perdeu")
 }else{
-document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+premio
+mostrarMensagem("🎉 Parabéns! Você ganhou: "+premio,"ganhou")
 }
 
 })
@@ -198,8 +243,6 @@ canvas.addEventListener("pointermove",(e)=>{
 
 if(!raspando) return
 if(raspadas>=limite) return
-
-e.preventDefault()
 
 let rect=canvas.getBoundingClientRect()
 
