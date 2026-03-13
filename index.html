@@ -96,6 +96,30 @@ canvas{
 
 #contador{ margin-top:10px; font-size:18px; text-align:left; }
 #listaPremios{ margin-top:8px; font-size:16px; text-align:left; }
+
+/* Ajuste mobile */
+@media(max-width:600px){
+  .grid{
+    grid-template-columns:repeat(3,90px);
+    gap:10px;
+  }
+  .card{
+    width:90px;
+    height:90px;
+  }
+  canvas{ width:90px; height:90px; }
+}
+@media(max-width:400px){
+  .grid{
+    grid-template-columns:repeat(2,80px);
+    gap:8px;
+  }
+  .card{
+    width:80px;
+    height:80px;
+  }
+  canvas{ width:80px; height:80px; }
+}
 </style>
 </head>
 
@@ -188,29 +212,19 @@ function liberar(){
   raspadas=0;
   limite=parseInt(document.getElementById("valor").value);
 
-  // delay curto para teclado fechar antes de travar scroll
+  // Delay para teclado fechar antes de travar scroll
   setTimeout(()=>{
     document.body.style.overflow="hidden";
     scrollTravado=true;
-    // previne touch move no mobile durante raspadinha
     document.addEventListener('touchmove', function(e){
       if(scrollTravado) e.preventDefault();
     }, { passive:false });
-  },200); // 200ms é suficiente para teclado fechar
+  },250);
 
   let premios=[
-    "Vale 1 cerveja",
-    "Vale 1 energético",
-    "Vale 1 dose",
-    "Vale 1 copão",
-    "Vale 1 cerveja",
-    "Vale 1 energético",
-    "Não ganhou",
-    "Não ganhou",
-    "Não ganhou",
-    "Não ganhou",
-    "Não ganhou",
-    "Não ganhou"
+    "Vale 1 cerveja","Vale 1 energético","Vale 1 dose","Vale 1 copão",
+    "Vale 1 cerveja","Vale 1 energético",
+    "Não ganhou","Não ganhou","Não ganhou","Não ganhou","Não ganhou","Não ganhou"
   ];
   premios.sort(()=>Math.random()-0.5);
 
@@ -227,14 +241,15 @@ function liberar(){
     card.appendChild(texto);
 
     let canvas=document.createElement("canvas");
-    canvas.width=120;
-    canvas.height=120;
+    let size=card.offsetWidth;
+    canvas.width=size;
+    canvas.height=size;
     card.appendChild(canvas);
     jogo.appendChild(card);
 
     let ctx=canvas.getContext("2d");
     ctx.fillStyle="#FFD700";
-    ctx.fillRect(0,0,120,120);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.globalCompositeOperation="destination-out";
 
     let raspando=false;
@@ -279,7 +294,7 @@ function liberar(){
     });
   }
 
-  // força recalcular grid para garantir que todas 12 raspadinhas apareçam no mobile
+  // força scroll top e recalcula grid mobile
   setTimeout(()=>{ window.scrollTo(0,0); },300);
 }
 </script>
