@@ -12,6 +12,7 @@ font-family:Arial;
 text-align:center;
 background:url("fundo.jpeg") center/cover no-repeat fixed;
 color:white;
+overflow:hidden;
 }
 
 .overlay{
@@ -59,7 +60,7 @@ overflow:hidden;
 position:absolute;
 z-index:1;
 text-align:center;
-padding:5px;
+padding:6px;
 }
 
 canvas{
@@ -67,6 +68,7 @@ position:absolute;
 top:0;
 left:0;
 z-index:2;
+touch-action:none;
 }
 
 </style>
@@ -165,25 +167,18 @@ ctx.fillRect(0,0,120,120)
 
 ctx.globalCompositeOperation="destination-out"
 
-canvas.addEventListener("pointermove",function(e){
+let raspando=false
 
-if(e.pressure<=0) return
-if(raspadas>=limite) return
-
-let rect=canvas.getBoundingClientRect()
-
-let x=e.clientX-rect.left
-let y=e.clientY-rect.top
-
-ctx.beginPath()
-ctx.arc(x,y,18,0,Math.PI*2)
-ctx.fill()
-
+canvas.addEventListener("pointerdown",(e)=>{
+raspando=true
 })
 
-canvas.addEventListener("pointerup",function(){
+canvas.addEventListener("pointerup",(e)=>{
+
+raspando=false
 
 if(canvas.revelado) return
+if(raspadas>=limite) return
 
 canvas.revelado=true
 raspadas++
@@ -203,6 +198,24 @@ c.style.pointerEvents="none"
 })
 
 }
+
+})
+
+canvas.addEventListener("pointermove",(e)=>{
+
+if(!raspando) return
+if(raspadas>=limite) return
+
+e.preventDefault()
+
+let rect=canvas.getBoundingClientRect()
+
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
+
+ctx.beginPath()
+ctx.arc(x,y,20,0,Math.PI*2)
+ctx.fill()
 
 })
 
