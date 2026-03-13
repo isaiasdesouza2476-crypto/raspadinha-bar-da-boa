@@ -61,11 +61,6 @@ top:0;
 left:0;
 }
 
-.travada{
-filter:grayscale(1);
-opacity:0.5;
-}
-
 #mensagem{
 font-size:26px;
 margin-top:20px;
@@ -106,10 +101,10 @@ font-weight:bold;
 
 <script>
 
-let raspadas=0
-let limite=0
+let raspadas = 0
+let limite = 0
 
-const premiosBase=[
+const premiosBase = [
 "Vale 1 cerveja",
 "Vale 1 energético",
 "Vale 1 dose",
@@ -124,10 +119,10 @@ const premiosBase=[
 "Não ganhou"
 ]
 
-function embaralhar(a){
-for(let i=a.length-1;i>0;i--){
+function embaralhar(array){
+for(let i=array.length-1;i>0;i--){
 let j=Math.floor(Math.random()*(i+1))
-[a[i],a[j]]=[a[j],a[i]]
+[array[i],array[j]]=[array[j],array[i]]
 }
 }
 
@@ -187,28 +182,22 @@ let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left
 let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top
 
 ctx.beginPath()
-ctx.arc(x,y,12,0,Math.PI*2)
+ctx.arc(x,y,14,0,Math.PI*2)
 ctx.fill()
 
 }
 
 canvas.addEventListener("mousedown",()=>raspando=true)
 canvas.addEventListener("mouseup",()=>raspando=false)
-
-canvas.addEventListener("mousemove",e=>{
-if(raspando) raspar(e)
-})
+canvas.addEventListener("mousemove",e=>{if(raspando) raspar(e)})
 
 canvas.addEventListener("touchstart",()=>raspando=true)
 canvas.addEventListener("touchend",()=>raspando=false)
-
-canvas.addEventListener("touchmove",e=>{
-if(raspando) raspar(e)
-})
+canvas.addEventListener("touchmove",e=>{if(raspando) raspar(e)})
 
 canvas.addEventListener("mouseup",()=>{
 
-if(!canvas.revelado){
+if(canvas.revelado) return
 
 canvas.revelado=true
 raspadas++
@@ -226,8 +215,6 @@ if(raspadas>=limite){
 document.querySelectorAll("canvas").forEach(c=>{
 c.style.pointerEvents="none"
 })
-
-}
 
 }
 
