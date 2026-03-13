@@ -7,29 +7,30 @@
 <style>
 
 body{
+margin:0;
 font-family:Arial;
 text-align:center;
-margin:0;
 background:url("fundo.jpeg") center/cover no-repeat fixed;
 color:white;
 }
 
 .overlay{
-background:rgba(0,0,0,0.7);
+background:rgba(0,0,0,0.65);
 min-height:100vh;
 padding:20px;
 }
 
-.logo{
-width:200px;
-}
-
 select,input,button{
-padding:10px;
+padding:12px;
 font-size:18px;
-margin:10px;
 border-radius:8px;
 border:none;
+margin:8px;
+}
+
+button{
+background:#f1c40f;
+cursor:pointer;
 }
 
 .grid{
@@ -41,20 +42,34 @@ margin-top:30px;
 }
 
 .card{
+position:relative;
 width:120px;
 height:120px;
-background:silver;
+border-radius:10px;
+overflow:hidden;
+background:white;
+color:black;
 display:flex;
 align-items:center;
 justify-content:center;
-cursor:pointer;
-border-radius:10px;
 font-weight:bold;
 }
 
-.raspada{
-background:white;
-color:black;
+canvas{
+position:absolute;
+top:0;
+left:0;
+}
+
+.travada{
+filter:grayscale(1);
+opacity:0.5;
+}
+
+#mensagem{
+font-size:26px;
+margin-top:20px;
+font-weight:bold;
 }
 
 </style>
@@ -63,8 +78,6 @@ color:black;
 <body>
 
 <div class="overlay">
-
-<img src="logo.png" class="logo">
 
 <h1>Raspadinha do Bar da Boa</h1>
 
@@ -75,13 +88,17 @@ color:black;
 <option value="2">50,00 - 2 raspadinhas</option>
 <option value="3">75,00 - 3 raspadinhas</option>
 <option value="4">100,00 - 4 raspadinhas</option>
+<option value="5">125,00 - 5 raspadinhas</option>
+<option value="6">150,00 - 6 raspadinhas</option>
 </select>
 
 <br>
 
-<input id="senha" type="password" placeholder="Senha">
+<input id="senha" type="password" placeholder="Senha do atendente">
 
 <button onclick="liberar()">Liberar raspadinhas</button>
+
+<div id="mensagem"></div>
 
 <div id="jogo" class="grid"></div>
 
@@ -89,22 +106,10 @@ color:black;
 
 <script>
 
-function liberar(){
+let raspadas=0
+let limite=0
 
-var senha=document.getElementById("senha").value
-
-if(senha!="221430"){
-
-alert("Senha incorreta")
-
-return
-
-}
-
-var qtd=parseInt(document.getElementById("valor").value)
-
-var premios=[
-
+const premiosBase=[
 "Vale 1 cerveja",
 "Vale 1 energético",
 "Vale 1 dose",
@@ -117,44 +122,116 @@ var premios=[
 "Não ganhou",
 "Não ganhou",
 "Não ganhou"
-
 ]
 
-premios.sort(()=>Math.random()-0.5)
+function embaralhar(a){
+for(let i=a.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1))
+[a[i],a[j]]=[a[j],a[i]]
+}
+}
 
-var jogo=document.getElementById("jogo")
+function liberar(){
 
+let senha=document.getElementById("senha").value
+
+if(senha!=="221430"){
+alert("Senha incorreta")
+return
+}
+
+raspadas=0
+limite=parseInt(document.getElementById("valor").value)
+
+let premios=[...premiosBase]
+embaralhar(premios)
+
+let jogo=document.getElementById("jogo")
 jogo.innerHTML=""
+document.getElementById("mensagem").innerHTML=""
 
-for(var i=0;i<qtd;i++){
+for(let i=0;i<12;i++){
 
-var carta=document.createElement("div")
+let card=document.createElement("div")
+card.className="card"
 
-carta.className="card"
+let texto=document.createElement("div")
+texto.innerHTML=premios[i]
 
-carta.innerHTML="RASPAR"
+card.appendChild(texto)
 
-carta.dataset.resultado=premios[i]
+let canvas=document.createElement("canvas")
+canvas.width=120
+canvas.height=120
 
-carta.onclick=function(){
+card.appendChild(canvas)
 
-if(this.classList.contains("raspada")) return
+jogo.appendChild(card)
 
-this.classList.add("raspada")
+let ctx=canvas.getContext("2d")
 
-if(this.dataset.resultado=="Não ganhou"){
+ctx.fillStyle="#C0C0C0"
+ctx.fillRect(0,0,120,120)
 
-this.innerHTML="❌ Não foi dessa vez"
+ctx.globalCompositeOperation="destination-out"
 
+let raspando=false
+
+function raspar(e){
+
+if(raspadas>=limite) return
+
+let rect=canvas.getBoundingClientRect()
+
+let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left
+let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+
+ctx.beginPath()
+ctx.arc(x,y,12,0,Math.PI*2)
+ctx.fill()
+
+}
+
+canvas.addEventListener("mousedown",()=>raspando=true)
+canvas.addEventListener("mouseup",()=>raspando=false)
+
+canvas.addEventListener("mousemove",e=>{
+if(raspando) raspar(e)
+})
+
+canvas.addEventListener("touchstart",()=>raspando=true)
+canvas.addEventListener("touchend",()=>raspando=false)
+
+canvas.addEventListener("touchmove",e=>{
+if(raspando) raspar(e)
+})
+
+canvas.addEventListener("mouseup",()=>{
+
+if(!canvas.revelado){
+
+canvas.revelado=true
+raspadas++
+
+let premio=texto.innerHTML
+
+if(premio==="Não ganhou"){
+document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
 }else{
+document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+premio
+}
 
-this.innerHTML="🎉 "+this.dataset.resultado
+if(raspadas>=limite){
+
+document.querySelectorAll("canvas").forEach(c=>{
+c.style.pointerEvents="none"
+})
 
 }
 
 }
 
-jogo.appendChild(carta)
+})
 
 }
 
