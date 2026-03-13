@@ -5,6 +5,7 @@
 <title>Raspadinha do Bar da Boa</title>
 
 <style>
+
 body{
 margin:0;
 font-family:Arial;
@@ -43,9 +44,9 @@ margin-top:30px;
 .card{
 width:120px;
 height:120px;
+border-radius:10px;
 background:white;
 color:black;
-border-radius:10px;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -59,6 +60,7 @@ position:absolute;
 top:0;
 left:0;
 }
+
 </style>
 </head>
 
@@ -67,6 +69,7 @@ left:0;
 <div class="overlay">
 
 <h1>Raspadinha do Bar da Boa</h1>
+
 <p>A cada R$25 em consumo você ganha uma raspadinha</p>
 
 <select id="valor">
@@ -92,20 +95,16 @@ left:0;
 
 <script>
 
-let limite=0
-let raspadas=0
-
 function liberar(){
 
 let senha=document.getElementById("senha").value
 
-if(senha!=="221430"){
+if(senha!="221430"){
 alert("Senha incorreta")
 return
 }
 
-limite=parseInt(document.getElementById("valor").value)
-raspadas=0
+let limite=parseInt(document.getElementById("valor").value)
 
 let premios=[
 "Vale 1 cerveja",
@@ -125,80 +124,20 @@ let premios=[
 premios.sort(()=>Math.random()-0.5)
 
 let jogo=document.getElementById("jogo")
+
 jogo.innerHTML=""
 
 for(let i=0;i<12;i++){
 
 let card=document.createElement("div")
 card.className="card"
-
-let texto=document.createElement("div")
-texto.innerHTML=premios[i]
-
-card.appendChild(texto)
-
-let canvas=document.createElement("canvas")
-canvas.width=120
-canvas.height=120
-
-card.appendChild(canvas)
+card.innerHTML=premios[i]
 
 jogo.appendChild(card)
 
-let ctx=canvas.getContext("2d")
-
-ctx.fillStyle="#C0C0C0"
-ctx.fillRect(0,0,120,120)
-
-ctx.globalCompositeOperation="destination-out"
-
-let raspando=false
-
-canvas.addEventListener("mousedown",()=>raspando=true)
-canvas.addEventListener("mouseup",()=>raspando=false)
-
-canvas.addEventListener("mousemove",function(e){
-
-if(!raspando) return
-if(raspadas>=limite) return
-
-let rect=canvas.getBoundingClientRect()
-
-let x=e.clientX-rect.left
-let y=e.clientY-rect.top
-
-ctx.beginPath()
-ctx.arc(x,y,15,0,Math.PI*2)
-ctx.fill()
-
-})
-
-canvas.addEventListener("mouseup",function(){
-
-if(canvas.revelado) return
-
-canvas.revelado=true
-raspadas++
-
-let premio=texto.innerHTML
-
-if(premio==="Não ganhou"){
-document.getElementById("mensagem").innerHTML="❌ Não foi dessa vez!"
-}else{
-document.getElementById("mensagem").innerHTML="🎉 Parabéns! Você ganhou: "+premio
 }
 
-if(raspadas>=limite){
-
-document.querySelectorAll("canvas").forEach(c=>{
-c.style.pointerEvents="none"
-})
-
-}
-
-})
-
-}
+document.getElementById("mensagem").innerHTML="Raspe até "+limite+" raspadinhas."
 
 }
 
